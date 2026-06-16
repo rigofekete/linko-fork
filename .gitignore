@@ -3,3 +3,5 @@ linko
 *~
 vendor/
 *.log
+LINKO_LOG_FILE
+output.txt
