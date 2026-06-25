@@ -30,12 +30,12 @@ func main() {
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
 	logger, cleanUp, err := initializeLogger(os.Getenv("LINKO_LOG_FILE"))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize logger %w", err)
+		fmt.Fprintf(os.Stderr, "failed to initialize logger %v", err)
 		return 1
 	}
 	defer func() {
 		if err := cleanUp(); err != nil {
-			fmt.Fprintf(os.Stderr, "error cleaning up %w", err)
+			fmt.Fprintf(os.Stderr, "error cleaning up %v", err)
 		}
 	}()
 
