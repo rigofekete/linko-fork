@@ -21,6 +21,12 @@ type server struct {
 	logger     *slog.Logger
 }
 
+const logContextKey contextKey = "log_context"
+
+type LogContext struct {
+	Username string
+}
+
 type spyReadCloser struct {
 	io.ReadCloser
 	bytesRead int
@@ -109,8 +115,13 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 			spyReader := &spyReadCloser{ReadCloser: r.Body}
 			spyWriter := &spyResponseWriter{ResponseWriter: w}
 			r.Body = spyReader
+
+			logCtx := &LogContext{}
+			r = r.WithContext(context.WithValue(r.Context(), logContextKey, logCtx))
+
 			next.ServeHTTP(spyWriter, r)
-			logger.Info("Served request",
+
+			attrs := []any{
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
 				slog.String("client_ip", r.RemoteAddr),
@@ -118,7 +129,11 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 				slog.Int("request_body_bytes", spyReader.bytesRead),
 				slog.Int("response_status", spyWriter.statusCode),
 				slog.Int("response_body_bytes", spyWriter.bytesWritten),
-			)
+			}
+			if logCtx.Username != "" {
+				attrs = append(attrs, slog.String("user", logCtx.Username))
+			}
+			logger.Info("Served request", attrs...)
 		})
 	}
 }
