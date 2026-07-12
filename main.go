@@ -143,10 +143,11 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 }
 
 func errorAttrs(err error) []slog.Attr {
-	var attrs []slog.Attr
-	currAttr := slog.Attr{
-		Key:   "msg",
-		Value: slog.StringValue(err.Error()),
+	attrs := []slog.Attr{
+		{
+			Key:   "message",
+			Value: slog.StringValue(err.Error()),
+		},
 	}
 	attrs = append(attrs, linkoerr.Attrs(err)...)
 	if stackErr, ok := errors.AsType[stackTracer](err); ok {
@@ -154,7 +155,6 @@ func errorAttrs(err error) []slog.Attr {
 			Key:   "stack_trace",
 			Value: slog.StringValue(fmt.Sprintf("%+v", stackErr.StackTrace())),
 		})
-		attrs = append(attrs, currAttr)
 	}
 	return attrs
 }
@@ -171,8 +171,9 @@ func replaceAttr(groups []string, a slog.Attr) slog.Attr {
 				unwrapedAttrs := errorAttrs(e)
 				attrSlice = append(attrSlice, slog.GroupAttrs(fmt.Sprintf("error_%d", i+1), unwrapedAttrs...))
 			}
+			return slog.GroupAttrs("errors", attrSlice...)
 		}
-		return slog.GroupAttrs("errors", attrSlice...)
+		return slog.GroupAttrs("error", errorAttrs(err)...)
 	}
 	return a
 }
