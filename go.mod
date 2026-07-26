@@ -10,6 +10,7 @@ require (
 require (
 	github.com/lmittmann/tint v1.2.0
 	github.com/mattn/go-isatty v0.0.22
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require golang.org/x/sys v0.42.0 // indirect
